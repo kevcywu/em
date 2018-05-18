@@ -1,0 +1,6 @@
+/nbproject/*
+/build/*
+/dist/*
+/wz/*
+build.xml
+manifest.mf

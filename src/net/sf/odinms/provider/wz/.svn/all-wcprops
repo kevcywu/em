@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svnroot/odinms/!svn/ver/942/odinms/trunk/net.sf.odinms/src/net/sf/odinms/provider/wz
+END
+WZFile.java
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svnroot/odinms/!svn/ver/942/odinms/trunk/net.sf.odinms/src/net/sf/odinms/provider/wz/WZFile.java
+END
+WZEntry.java
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svnroot/odinms/!svn/ver/880/odinms/trunk/net.sf.odinms/src/net/sf/odinms/provider/wz/WZEntry.java
+END
+ImgMapleSound.java
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svnroot/odinms/!svn/ver/880/odinms/trunk/net.sf.odinms/src/net/sf/odinms/provider/wz/ImgMapleSound.java
+END
+ListWZFile.java
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svnroot/odinms/!svn/ver/942/odinms/trunk/net.sf.odinms/src/net/sf/odinms/provider/wz/ListWZFile.java
+END
+WZIMGFile.java
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svnroot/odinms/!svn/ver/942/odinms/trunk/net.sf.odinms/src/net/sf/odinms/provider/wz/WZIMGFile.java
+END
+WZTool.java
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svnroot/odinms/!svn/ver/942/odinms/trunk/net.sf.odinms/src/net/sf/odinms/provider/wz/WZTool.java
+END
+MapleDataType.java
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svnroot/odinms/!svn/ver/880/odinms/trunk/net.sf.odinms/src/net/sf/odinms/provider/wz/MapleDataType.java
+END
+WZDirectoryEntry.java
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svnroot/odinms/!svn/ver/880/odinms/trunk/net.sf.odinms/src/net/sf/odinms/provider/wz/WZDirectoryEntry.java
+END
+PNGMapleCanvas.java
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svnroot/odinms/!svn/ver/940/odinms/trunk/net.sf.odinms/src/net/sf/odinms/provider/wz/PNGMapleCanvas.java
+END
+WZFileEntry.java
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svnroot/odinms/!svn/ver/880/odinms/trunk/net.sf.odinms/src/net/sf/odinms/provider/wz/WZFileEntry.java
+END
+WZIMGEntry.java
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svnroot/odinms/!svn/ver/880/odinms/trunk/net.sf.odinms/src/net/sf/odinms/provider/wz/WZIMGEntry.java
+END
