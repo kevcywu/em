@@ -38,8 +38,8 @@ import javax.script.ScriptException;
 
 import client.MapleCharacter;
 import database.DatabaseConnection;
-import net.sf.world.MapleParty;
-import net.sf.world.MaplePartyCharacter;
+import net.world.MapleParty;
+import net.world.MaplePartyCharacter;
 import provider.MapleDataProviderFactory;
 import server.TimerManager;
 import server.life.MapleMonster;

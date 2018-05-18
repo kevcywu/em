@@ -41,7 +41,7 @@ import client.MapleJob;
 import client.MapleQuestStatus;
 import client.MapleStat;
 import client.SkillFactory;
-import net.sf.channel.ChannelServer;
+import net.channel.ChannelServer;
 import provider.MapleData;
 import provider.MapleDataTool;
 import server.MapleInventoryManipulator;

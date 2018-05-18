@@ -30,7 +30,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 
 import database.DatabaseConnection;
-import net.sf.channel.ChannelServer;
+import net.channel.ChannelServer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

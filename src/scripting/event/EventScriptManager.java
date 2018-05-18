@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
-import net.sf.channel.ChannelServer;
+import net.channel.ChannelServer;
 import scripting.AbstractScriptManager;
 
 /**

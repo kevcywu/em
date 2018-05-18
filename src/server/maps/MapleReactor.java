@@ -23,7 +23,7 @@ package server.maps;
 
 import java.awt.Rectangle;
 import client.MapleClient;
-import net.sf.MaplePacket;
+import net.MaplePacket;
 import scripting.reactor.ReactorScriptManager;
 import tools.MaplePacketCreator;
 import tools.Pair;

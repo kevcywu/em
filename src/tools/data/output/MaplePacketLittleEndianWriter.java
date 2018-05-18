@@ -23,8 +23,8 @@ package tools.data.output;
 
 import java.io.ByteArrayOutputStream;
 
-import net.sf.ByteArrayMaplePacket;
-import net.sf.MaplePacket;
+import net.ByteArrayMaplePacket;
+import net.MaplePacket;
 import tools.HexTool;
 
 /**

@@ -1,7 +1,7 @@
 package server.maps;
 
 import client.MapleClient;
-import net.sf.MaplePacket;
+import net.MaplePacket;
 import tools.MaplePacketCreator;
 
 public class MapleMapEffect {

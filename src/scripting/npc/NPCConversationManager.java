@@ -38,7 +38,7 @@ import client.MapleJob;
 import client.MapleSkinColor;
 import client.MapleStat;
 import client.SkillFactory;
-import net.sf.world.guild.MapleGuild;
+import net.world.guild.MapleGuild;
 import scripting.AbstractPlayerInteraction;
 import scripting.event.EventManager;
 import server.MapleInventoryManipulator;

@@ -21,7 +21,7 @@
 
 package client;
 
-import net.sf.LongValueHolder;
+import net.LongValueHolder;
 
 public enum MapleBuffStat implements LongValueHolder {
 	WATK(0x1),

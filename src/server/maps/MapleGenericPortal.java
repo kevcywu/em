@@ -26,7 +26,7 @@ import java.awt.Point;
 import client.MapleCharacter;
 import client.MapleClient;
 import client.anticheat.CheatingOffense;
-import net.sf.channel.ChannelServer;
+import net.channel.ChannelServer;
 import scripting.portal.PortalScriptManager;
 import server.MaplePortal;
 import tools.MaplePacketCreator;

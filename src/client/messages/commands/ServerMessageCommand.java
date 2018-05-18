@@ -26,7 +26,7 @@ import client.messages.Command;
 import client.messages.CommandDefinition;
 import client.messages.IllegalCommandSyntaxException;
 import client.messages.MessageCallback;
-import net.sf.channel.ChannelServer;
+import net.channel.ChannelServer;
 import tools.StringUtil;
 
 public class ServerMessageCommand implements Command {

@@ -21,7 +21,7 @@
 
 package client;
 
-import net.sf.IntValueHolder;
+import net.IntValueHolder;
 
 public enum MapleStat implements IntValueHolder {
 	SKIN(0x1),

@@ -45,7 +45,7 @@ import client.Item;
 import client.MapleClient;
 import client.MapleInventoryType;
 import database.DatabaseConnection;
-import net.sf.PacketProcessor;
+import net.PacketProcessor;
 import tools.MaplePacketCreator;
 
 import org.slf4j.Logger;

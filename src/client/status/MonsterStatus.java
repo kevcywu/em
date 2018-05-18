@@ -21,7 +21,7 @@
 
 package client.status;
 
-import net.sf.IntValueHolder;
+import net.IntValueHolder;
 
 public enum MonsterStatus implements IntValueHolder {
 	WATK(0x1),

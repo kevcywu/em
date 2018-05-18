@@ -28,8 +28,8 @@ import client.messages.Command;
 import client.messages.CommandDefinition;
 import client.messages.IllegalCommandSyntaxException;
 import client.messages.MessageCallback;
-import net.sf.MaplePacket;
-import net.sf.channel.ChannelServer;
+import net.MaplePacket;
+import net.channel.ChannelServer;
 import tools.MaplePacketCreator;
 import tools.StringUtil;
 

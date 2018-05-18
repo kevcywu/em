@@ -30,7 +30,7 @@ import java.util.Map;
 
 import client.MapleCharacter;
 import client.MapleClient;
-import net.sf.channel.ChannelServer;
+import net.channel.ChannelServer;
 import provider.MapleData;
 import provider.MapleDataProvider;
 import provider.MapleDataTool;

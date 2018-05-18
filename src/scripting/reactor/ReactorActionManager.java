@@ -29,7 +29,7 @@ import java.util.List;
 import client.IItem;
 import client.Item;
 import client.MapleClient;
-import net.sf.channel.ChannelServer;
+import net.channel.ChannelServer;
 import scripting.AbstractPlayerInteraction;
 import server.life.MapleLifeFactory;
 import server.life.MapleMonster;

@@ -51,7 +51,7 @@ import client.MapleStat;
 import client.SkillFactory;
 import client.status.MonsterStatus;
 import client.status.MonsterStatusEffect;
-import net.sf.channel.ChannelServer;
+import net.channel.ChannelServer;
 import provider.MapleData;
 import provider.MapleDataTool;
 import server.life.MapleMonster;

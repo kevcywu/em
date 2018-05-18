@@ -32,7 +32,7 @@ import client.messages.CommandDefinition;
 import client.messages.IllegalCommandSyntaxException;
 import client.messages.MessageCallback;
 import client.messages.ServernoticeMapleClientMessageCallback;
-import net.sf.world.remote.CheaterData;
+import net.world.remote.CheaterData;
 import tools.MaplePacketCreator;
 
 public class CheaterHuntingCommands implements Command {
