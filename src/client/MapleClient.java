@@ -20,7 +20,6 @@ import java.util.concurrent.ScheduledFuture;
 
 import javax.script.ScriptEngine;
 
-import client.messages.MessageCallback;
 import database.DatabaseConnection;
 import database.DatabaseException;
 import net.channel.ChannelServer;
@@ -615,19 +614,19 @@ public class MapleClient {
         }
     }
 
-    public void dropDebugMessage(MessageCallback mc) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Connected: ");
-        builder.append(getSession().isConnected());
-        builder.append(" Closing: ");
-        builder.append(getSession().isClosing());
-        builder.append(" ClientKeySet: ");
-        builder.append(getSession().getAttribute(MapleClient.CLIENT_KEY) != null);
-        builder.append(" loggedin: ");
-        builder.append(isLoggedIn());
-        builder.append(" has char: ");
-        builder.append(getPlayer() != null);
-        mc.dropMessage(builder.toString());
+    public void dropDebugMessage(/*MessageCallback mc*/) {
+//        StringBuilder builder = new StringBuilder();
+//        builder.append("Connected: ");
+//        builder.append(getSession().isConnected());
+//        builder.append(" Closing: ");
+//        builder.append(getSession().isClosing());
+//        builder.append(" ClientKeySet: ");
+//        builder.append(getSession().getAttribute(MapleClient.CLIENT_KEY) != null);
+//        builder.append(" loggedin: ");
+//        builder.append(isLoggedIn());
+//        builder.append(" has char: ");
+//        builder.append(getPlayer() != null);
+//        mc.dropMessage(builder.toString());
     }
 
     /**
