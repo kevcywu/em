@@ -5,22 +5,19 @@ import client.MapleCharacter;
 import client.MapleClient;
 import net.AbstractMaplePacketHandler;
 import net.channel.ChannelServer;
-import tools.MaplePacketCreator;
+import net.packetcreator.MaplePacketCreator;
 import tools.data.input.SeekableLittleEndianAccessor;
 
-/**
- *
- * @author Matze
- */
 public class WhisperHandler extends AbstractMaplePacketHandler {
-    
+
+    @Override
     public void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
         byte mode = slea.readByte();
         if (mode == 6) { // whisper
             // System.out.println("in whisper handler");
             String recipient = slea.readMapleAsciiString();
             String text = slea.readMapleAsciiString();
-            
+
             MapleCharacter player = c.getChannelServer().getPlayerStorage().getCharacterByName(recipient);
             if (player != null) {
                 player.getClient().getSession().write(MaplePacketCreator.getWhisper(c.getPlayer().getName(), c.getChannel(), text));

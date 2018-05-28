@@ -13,7 +13,7 @@ import server.MapleInventoryManipulator;
 import server.MapleItemInformationProvider;
 import server.maps.MapleMap;
 import server.quest.MapleQuest;
-import tools.MaplePacketCreator;
+import net.packetcreator.MaplePacketCreator;
 
 public class AbstractPlayerInteraction {
 	private MapleClient c;

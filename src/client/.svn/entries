@@ -118,29 +118,6 @@ copied
 https://odinms.svn.sourceforge.net/svnroot/odinms/odinms/trunk/net.sf.odinms/src/net/sf/odinms/client/Equip.java
 988
 
-ExpTable.java
-file
-
-
-
-add
-
-05d1d59de19a6f89e0b83aabe44ee5de
-
-
-
-
-
-
-
-
-
-
-
-copied
-https://odinms.svn.sourceforge.net/svnroot/odinms/odinms/trunk/net.sf.odinms/src/net/sf/odinms/client/ExpTable.java
-988
-
 IEquip.java
 file
 
@@ -692,13 +669,6 @@ add
 copied
 https://odinms.svn.sourceforge.net/svnroot/odinms/odinms/trunk/net.sf.odinms/src/net/sf/odinms/client/SkillFactory.java
 988
-
-anticheat
-dir
-
-
-
-add
 
 status
 dir

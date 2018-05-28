@@ -1,5 +1,6 @@
 package client;
 
+import constant.ExpTable;
 import java.awt.Point;
 import java.rmi.RemoteException;
 import java.sql.Connection;
@@ -25,7 +26,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.text.NumberFormat;
 import java.text.DecimalFormat;
 
-import client.anticheat.CheatTracker;
 import database.DatabaseConnection;
 import database.DatabaseException;
 import net.MaplePacket;
@@ -56,7 +56,7 @@ import server.maps.MapleSummon;
 import server.maps.SavedLocationType;
 import server.quest.MapleCustomQuest;
 import server.quest.MapleQuest;
-import tools.MaplePacketCreator;
+import net.packetcreator.MaplePacketCreator;
 import tools.Pair;
 
 import org.slf4j.Logger;
@@ -136,7 +136,6 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements In
     private BuddyList buddylist;
 
     // anticheat related information
-    private CheatTracker anticheat;
     private ScheduledFuture<?> dragonBloodSchedule;
 
     //guild related information
@@ -159,12 +158,10 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements In
         }
 
         quests = new LinkedHashMap<MapleQuest, MapleQuestStatus>();
-        anticheat = new CheatTracker(this);
         setPosition(new Point(0, 0));
     }
 
-    public static MapleCharacter loadCharFromDB(int charid, MapleClient client, boolean channelserver)
-            throws SQLException {
+    public static MapleCharacter loadCharFromDB(int charid, MapleClient client, boolean channelserver) throws SQLException {
         MapleCharacter ret = new MapleCharacter();
         ret.client = client;
         ret.id = charid;
@@ -1200,10 +1197,6 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements In
         this.gender = gender;
     }
 
-    public CheatTracker getCheatTracker() {
-        return anticheat;
-    }
-
     public BuddyList getBuddylist() {
         return buddylist;
     }
@@ -2213,11 +2206,11 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements In
         if (checkEquipped) {
             possesed += inventory[MapleInventoryType.EQUIPPED.ordinal()].countById(itemid);
         }
-        if (greaterOrEquals) {
-            return possesed >= quantity;
-        } else {
-            return possesed == quantity;
-        }
+        return (greaterOrEquals) ? (possesed >= quantity) : (possesed == quantity);
+    }
+
+    public void dropMessage(String msg) {
+        client.announce(MaplePacketCreator.serverNotice(5, msg));
     }
 
     private static class MapleBuffStatValueHolder {

@@ -6,30 +6,30 @@ import org.slf4j.LoggerFactory;
 import client.IItem;
 import client.MapleClient;
 import client.MapleInventoryType;
-import client.anticheat.CheatingOffense;
 import net.AbstractMaplePacketHandler;
-import tools.MaplePacketCreator;
+import net.packetcreator.MaplePacketCreator;
 import tools.data.input.SeekableLittleEndianAccessor;
 
 public class UseChairHandler extends AbstractMaplePacketHandler {
-	private static Logger log = LoggerFactory.getLogger(UseItemHandler.class);
 
-	public UseChairHandler() {
-	}
+    private static final Logger log = LoggerFactory.getLogger(UseItemHandler.class);
 
-	public void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
+    public UseChairHandler() {
+    }
 
-		int itemId = slea.readInt();
-		IItem toUse = c.getPlayer().getInventory(MapleInventoryType.SETUP).findById(itemId);
+    @Override
+    public void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
 
-		if (toUse == null) {
-			log.info("[h4x] Player {} is using an item he does not have: {}", c.getPlayer().getName(), Integer.valueOf(itemId));
-			c.getPlayer().getCheatTracker().registerOffense(CheatingOffense.USING_UNAVAILABLE_ITEM, Integer.toString(itemId));
-		} else {
-			c.getPlayer().setChair(itemId);
-			c.getPlayer().getMap().broadcastMessage(c.getPlayer(), MaplePacketCreator.showChair(c.getPlayer().getId(), itemId), false);
-		}
-		
-		c.getSession().write(MaplePacketCreator.enableActions());
-	}
+        int itemId = slea.readInt();
+        IItem toUse = c.getPlayer().getInventory(MapleInventoryType.SETUP).findById(itemId);
+
+        if (toUse == null) {
+            log.info("[h4x] Player {} is using an item he does not have: {}", c.getPlayer().getName(), Integer.valueOf(itemId));
+        } else {
+            c.getPlayer().setChair(itemId);
+            c.getPlayer().getMap().broadcastMessage(c.getPlayer(), MaplePacketCreator.showChair(c.getPlayer().getId(), itemId), false);
+        }
+
+        c.getSession().write(MaplePacketCreator.enableActions());
+    }
 }

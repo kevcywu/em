@@ -8,8 +8,8 @@ import client.MapleCharacter;
 
 public class PlayerStorage implements IPlayerStorage {
 
-    Map<String, MapleCharacter> nameToChar = new LinkedHashMap<String, MapleCharacter>();
-    Map<Integer, MapleCharacter> idToChar = new LinkedHashMap<Integer, MapleCharacter>();
+    Map<String, MapleCharacter> nameToChar = new LinkedHashMap<>();
+    Map<Integer, MapleCharacter> idToChar = new LinkedHashMap<>();
 
     public void registerPlayer(MapleCharacter chr) {
         nameToChar.put(chr.getName().toLowerCase(), chr);
@@ -21,14 +21,17 @@ public class PlayerStorage implements IPlayerStorage {
         idToChar.remove(chr.getId());
     }
 
+    @Override
     public MapleCharacter getCharacterByName(String name) {
         return nameToChar.get(name.toLowerCase());
     }
 
+    @Override
     public MapleCharacter getCharacterById(int id) {
-        return idToChar.get(Integer.valueOf(id));
+        return idToChar.get(id);
     }
 
+    @Override
     public Collection<MapleCharacter> getAllCharacters() {
         return nameToChar.values();
     }

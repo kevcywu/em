@@ -40,7 +40,7 @@ import server.TimerManager;
 import server.life.MapleMonster;
 import server.life.MapleNPC;
 import server.life.SpawnPoint;
-import tools.MaplePacketCreator;
+import net.packetcreator.MaplePacketCreator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,11 +154,10 @@ public class MapleMap {
 
     public void removeMapObject(int num) {
         synchronized (this.mapobjects) {
-            /*if (!mapobjects.containsKey(Integer.valueOf(num))) {
-				log.warn("Removing: mapobject {} does not exist on map {}", Integer.valueOf(num), Integer
-					.valueOf(getId()));
-			}*/
-            this.mapobjects.remove(Integer.valueOf(num));
+            if (!mapobjects.containsKey(Integer.valueOf(num))) {
+                log.warn("Removing: mapobject {} does not exist on map {}", num, getId());
+            }
+            this.mapobjects.remove(num);
         }
     }
 
@@ -743,6 +742,7 @@ public class MapleMap {
             }
             sendObjectPlacement(chr.getClient());
             // spawn self
+
             chr.getClient().getSession().write(MaplePacketCreator.spawnPlayerMapobject(chr));
             this.mapobjects.put(Integer.valueOf(chr.getObjectId()), chr);
         }

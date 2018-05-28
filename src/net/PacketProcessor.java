@@ -1,24 +1,3 @@
-/*
-	This file is part of the OdinMS Maple Story Server
-    Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
-                       Matthias Butz <matze@odinms.de>
-                       Jan Christian Meyer <vimes@odinms.de>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License version 3
-    as published by the Free Software Foundation. You may not use, modify
-    or distribute this program under any other version of the
-    GNU Affero General Public License.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 package net;
 
 import net.channel.handler.BuddylistModifyHandler;
@@ -84,121 +63,138 @@ import net.login.handler.LoginPasswordHandler;
 import net.login.handler.RelogRequestHandler;
 import net.login.handler.ServerStatusRequestHandler;
 import net.login.handler.ServerlistRequestHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class PacketProcessor {
-	//private static Logger log = LoggerFactory.getLogger(PacketProcessor.class);
-	public enum Mode {
-		LOGINSERVER,
-		CHANNELSERVER
-	};
 
-	private static PacketProcessor instance;
-	private MaplePacketHandler[] handlers;
+    private static final Logger log = LoggerFactory.getLogger(PacketProcessor.class);
 
-	private PacketProcessor() {
-		int maxRecvOp = 0;
-		for (RecvPacketOpcode op : RecvPacketOpcode.values()) {
-			if (op.getValue() > maxRecvOp) {
-				maxRecvOp = op.getValue();
-			}
-		}
-		handlers = new MaplePacketHandler[maxRecvOp + 1];
-	}
+    public enum Mode {
+        LOGINSERVER, CHANNELSERVER
+    };
 
-	public MaplePacketHandler getHandler(short packetId) {
-		if (packetId > handlers.length) {
-			return null;
-		}
-		MaplePacketHandler handler = handlers[packetId];
-		if (handler != null) {
-			return handler;
-		}
-		return null;
-	}
+    private static PacketProcessor instance;
+    private MaplePacketHandler[] handlers;
 
-	public void registerHandler(RecvPacketOpcode code, MaplePacketHandler handler) {
-		handlers[code.getValue()] = handler;
-	}
+    private PacketProcessor() {
+        int maxRecvOp = 0;
+        for (RecvOpcode op : RecvOpcode.values()) {
+            if (op.getValue() > maxRecvOp) {
+                maxRecvOp = op.getValue();
+            }
+        }
+        handlers = new MaplePacketHandler[maxRecvOp + 1];
+    }
 
-	public synchronized static PacketProcessor getProcessor(Mode mode) {
-		if (instance == null) {
-			instance = new PacketProcessor();
-			instance.reset(mode);
-		}
-		return instance;
-	}
+    public MaplePacketHandler getHandler(short packetId) {
+        if (packetId > handlers.length) {
+            return null;
+        }
+        MaplePacketHandler handler = handlers[packetId];
+        if (handler != null) {
+            return handler;
+        }
+        return null;
+    }
 
-	public void reset(Mode mode) {
-		handlers = new MaplePacketHandler[handlers.length];
-		registerHandler(RecvPacketOpcode.PONG, new KeepAliveHandler());
-		if (mode == Mode.LOGINSERVER) {
-			registerHandler(RecvPacketOpcode.AFTER_LOGIN, new AfterLoginHandler());
-			registerHandler(RecvPacketOpcode.SERVERLIST_REREQUEST, new ServerlistRequestHandler());
-			registerHandler(RecvPacketOpcode.CHARLIST_REQUEST, new CharlistRequestHandler());
-			registerHandler(RecvPacketOpcode.CHAR_SELECT, new CharSelectedHandler());
-			registerHandler(RecvPacketOpcode.LOGIN_PASSWORD, new LoginPasswordHandler());
-			registerHandler(RecvPacketOpcode.RELOG, new RelogRequestHandler());
-			registerHandler(RecvPacketOpcode.SERVERLIST_REQUEST, new ServerlistRequestHandler());
-			registerHandler(RecvPacketOpcode.SERVERSTATUS_REQUEST, new ServerStatusRequestHandler());
-			registerHandler(RecvPacketOpcode.CHECK_CHAR_NAME, new CheckCharNameHandler());
-			registerHandler(RecvPacketOpcode.CREATE_CHAR, new CreateCharHandler());
-			registerHandler(RecvPacketOpcode.DELETE_CHAR, new DeleteCharHandler());
-		} else if (mode == Mode.CHANNELSERVER) {
-			registerHandler(RecvPacketOpcode.CHANGE_CHANNEL, new ChangeChannelHandler());
-			registerHandler(RecvPacketOpcode.STRANGE_DATA, LoginRequiringNoOpHandler.getInstance());
-			registerHandler(RecvPacketOpcode.GENERAL_CHAT, new GeneralchatHandler());
-			registerHandler(RecvPacketOpcode.WHISPER, new WhisperHandler());
-			registerHandler(RecvPacketOpcode.NPC_TALK, new NPCTalkHandler());
-			registerHandler(RecvPacketOpcode.NPC_TALK_MORE, new NPCMoreTalkHandler());
-			registerHandler(RecvPacketOpcode.QUEST_ACTION, new QuestActionHandler());
-			registerHandler(RecvPacketOpcode.NPC_SHOP, new NPCShopHandler());
-			registerHandler(RecvPacketOpcode.ITEM_MOVE, new ItemMoveHandler());
-			registerHandler(RecvPacketOpcode.MESO_DROP, new MesoDropHandler());
-			registerHandler(RecvPacketOpcode.PLAYER_LOGGEDIN, new PlayerLoggedinHandler());
-			registerHandler(RecvPacketOpcode.CHANGE_MAP, new ChangeMapHandler());
-			registerHandler(RecvPacketOpcode.MOVE_LIFE, new MoveLifeHandler());
-			registerHandler(RecvPacketOpcode.CLOSE_RANGE_ATTACK, new CloseRangeDamageHandler());
-			registerHandler(RecvPacketOpcode.RANGED_ATTACK, new RangedAttackHandler());
-			registerHandler(RecvPacketOpcode.MAGIC_ATTACK, new MagicDamageHandler());
-			registerHandler(RecvPacketOpcode.TAKE_DAMAGE, new TakeDamageHandler());
-			registerHandler(RecvPacketOpcode.MOVE_PLAYER, new MovePlayerHandler());
-			registerHandler(RecvPacketOpcode.USE_CASH_ITEM, new UseCashItemHandler());
-			registerHandler(RecvPacketOpcode.USE_ITEM, new UseItemHandler());
-			registerHandler(RecvPacketOpcode.USE_RETURN_SCROLL, new UseItemHandler());
-			registerHandler(RecvPacketOpcode.USE_UPGRADE_SCROLL, new ScrollHandler());
-			registerHandler(RecvPacketOpcode.FACE_EXPRESSION, new FaceExpressionHandler());
-			registerHandler(RecvPacketOpcode.HEAL_OVER_TIME, new HealOvertimeHandler());
-			registerHandler(RecvPacketOpcode.ITEM_PICKUP, new ItemPickupHandler());
-			registerHandler(RecvPacketOpcode.CHAR_INFO_REQUEST, new CharInfoRequestHandler());
-			registerHandler(RecvPacketOpcode.SPECIAL_MOVE, new SpecialMoveHandler());
-			registerHandler(RecvPacketOpcode.CANCEL_BUFF, new CancelBuffHandler());
-			registerHandler(RecvPacketOpcode.CANCEL_ITEM_EFFECT, new CancelItemEffectHandler());
-			registerHandler(RecvPacketOpcode.PLAYER_INTERACTION, new PlayerInteractionHandler());
-			registerHandler(RecvPacketOpcode.DISTRIBUTE_AP, new DistributeAPHandler());
-			registerHandler(RecvPacketOpcode.DISTRIBUTE_SP, new DistributeSPHandler());
-			registerHandler(RecvPacketOpcode.CHANGE_KEYMAP, new KeymapChangeHandler());
-			registerHandler(RecvPacketOpcode.CHANGE_MAP_SPECIAL, new ChangeMapSpecialHandler());
-			registerHandler(RecvPacketOpcode.STORAGE, new StorageHandler());
-			registerHandler(RecvPacketOpcode.GIVE_FAME, new GiveFameHandler());
-			registerHandler(RecvPacketOpcode.PARTY_OPERATION, new PartyOperationHandler());
-			registerHandler(RecvPacketOpcode.DENY_PARTY_REQUEST, new DenyPartyRequestHandler());
-			registerHandler(RecvPacketOpcode.PARTYCHAT, new PartychatHandler());
-			registerHandler(RecvPacketOpcode.USE_DOOR, new DoorHandler());
-			registerHandler(RecvPacketOpcode.ENTER_MTS, new EnterMTSHandler());
-			registerHandler(RecvPacketOpcode.ENTER_CASH_SHOP, new EnterCashShopHandler());
-			registerHandler(RecvPacketOpcode.DAMAGE_SUMMON, new DamageSummonHandler());
-			registerHandler(RecvPacketOpcode.MOVE_SUMMON, new MoveSummonHandler());
-			registerHandler(RecvPacketOpcode.SUMMON_ATTACK, new SummonDamageHandler());
-			registerHandler(RecvPacketOpcode.BUDDYLIST_MODIFY, new BuddylistModifyHandler());
-			registerHandler(RecvPacketOpcode.USE_ITEMEFFECT, new UseItemEffectHandler());
-			registerHandler(RecvPacketOpcode.USE_CHAIR, new UseChairHandler());
-			registerHandler(RecvPacketOpcode.CANCEL_CHAIR, new CancelChairHandler());
-			registerHandler(RecvPacketOpcode.DAMAGE_REACTOR, new ReactorHitHandler());
-			registerHandler(RecvPacketOpcode.GUILD_OPERATION, new GuildOperationHandler());
-			registerHandler(RecvPacketOpcode.BBS_OPERATION, new BBSOperationHandler());
-			registerHandler(RecvPacketOpcode.SKILL_EFFECT, new SkillEffectHandler());
-		} else {
-			throw new RuntimeException("Unknown packet processor mode");
-		}
-	}
+    public void registerHandler(RecvOpcode code, MaplePacketHandler handler) {
+        if (code.getValue() != -2) {
+            try {
+                handlers[code.getValue()] = handler;
+            } catch (ArrayIndexOutOfBoundsException e) {
+                log.error("Error registering handler - " + code.name());
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public synchronized static PacketProcessor getProcessor(Mode mode) {
+        if (instance == null) {
+            instance = new PacketProcessor();
+            instance.reset(mode);
+        }
+        return instance;
+    }
+
+    public void reset(Mode mode) {
+        handlers = new MaplePacketHandler[handlers.length];
+        registerHandler(RecvOpcode.PONG, new KeepAliveHandler());
+        if (null == mode) {
+            throw new RuntimeException("Unknown packet processor mode");
+        } else {
+            switch (mode) {
+                case LOGINSERVER:
+                    registerHandler(RecvOpcode.AFTER_LOGIN, new AfterLoginHandler());
+                    registerHandler(RecvOpcode.SERVERLIST_REREQUEST, new ServerlistRequestHandler());
+                    registerHandler(RecvOpcode.CHARLIST_REQUEST, new CharlistRequestHandler());
+                    registerHandler(RecvOpcode.CHAR_SELECT, new CharSelectedHandler());
+                    registerHandler(RecvOpcode.LOGIN_PASSWORD, new LoginPasswordHandler());
+                    registerHandler(RecvOpcode.RELOG, new RelogRequestHandler());
+                    registerHandler(RecvOpcode.SERVERLIST_REQUEST, new ServerlistRequestHandler());
+                    registerHandler(RecvOpcode.SERVERSTATUS_REQUEST, new ServerStatusRequestHandler());
+                    registerHandler(RecvOpcode.CHECK_CHAR_NAME, new CheckCharNameHandler());
+                    registerHandler(RecvOpcode.CREATE_CHAR, new CreateCharHandler());
+                    registerHandler(RecvOpcode.DELETE_CHAR, new DeleteCharHandler());
+                    break;
+                case CHANNELSERVER:
+                    registerHandler(RecvOpcode.CHANGE_CHANNEL, new ChangeChannelHandler());
+                    registerHandler(RecvOpcode.STRANGE_DATA, LoginRequiringNoOpHandler.getInstance());
+                    registerHandler(RecvOpcode.GENERAL_CHAT, new GeneralchatHandler());
+                    registerHandler(RecvOpcode.WHISPER, new WhisperHandler());
+                    registerHandler(RecvOpcode.NPC_TALK, new NPCTalkHandler());
+                    registerHandler(RecvOpcode.NPC_TALK_MORE, new NPCMoreTalkHandler());
+                    registerHandler(RecvOpcode.QUEST_ACTION, new QuestActionHandler());
+                    registerHandler(RecvOpcode.NPC_SHOP, new NPCShopHandler());
+                    registerHandler(RecvOpcode.ITEM_MOVE, new ItemMoveHandler());
+                    registerHandler(RecvOpcode.MESO_DROP, new MesoDropHandler());
+                    registerHandler(RecvOpcode.PLAYER_LOGGEDIN, new PlayerLoggedinHandler());
+                    registerHandler(RecvOpcode.CHANGE_MAP, new ChangeMapHandler());
+                    registerHandler(RecvOpcode.MOVE_LIFE, new MoveLifeHandler());
+                    registerHandler(RecvOpcode.CLOSE_RANGE_ATTACK, new CloseRangeDamageHandler());
+                    registerHandler(RecvOpcode.RANGED_ATTACK, new RangedAttackHandler());
+                    registerHandler(RecvOpcode.MAGIC_ATTACK, new MagicDamageHandler());
+                    registerHandler(RecvOpcode.TAKE_DAMAGE, new TakeDamageHandler());
+                    registerHandler(RecvOpcode.MOVE_PLAYER, new MovePlayerHandler());
+                    registerHandler(RecvOpcode.USE_CASH_ITEM, new UseCashItemHandler());
+                    registerHandler(RecvOpcode.USE_ITEM, new UseItemHandler());
+                    registerHandler(RecvOpcode.USE_RETURN_SCROLL, new UseItemHandler());
+                    registerHandler(RecvOpcode.USE_UPGRADE_SCROLL, new ScrollHandler());
+                    registerHandler(RecvOpcode.FACE_EXPRESSION, new FaceExpressionHandler());
+                    registerHandler(RecvOpcode.HEAL_OVER_TIME, new HealOvertimeHandler());
+                    registerHandler(RecvOpcode.ITEM_PICKUP, new ItemPickupHandler());
+                    registerHandler(RecvOpcode.CHAR_INFO_REQUEST, new CharInfoRequestHandler());
+                    registerHandler(RecvOpcode.SPECIAL_MOVE, new SpecialMoveHandler());
+                    registerHandler(RecvOpcode.CANCEL_BUFF, new CancelBuffHandler());
+                    registerHandler(RecvOpcode.CANCEL_ITEM_EFFECT, new CancelItemEffectHandler());
+                    registerHandler(RecvOpcode.PLAYER_INTERACTION, new PlayerInteractionHandler());
+                    registerHandler(RecvOpcode.DISTRIBUTE_AP, new DistributeAPHandler());
+                    registerHandler(RecvOpcode.DISTRIBUTE_SP, new DistributeSPHandler());
+                    registerHandler(RecvOpcode.CHANGE_KEYMAP, new KeymapChangeHandler());
+                    registerHandler(RecvOpcode.CHANGE_MAP_SPECIAL, new ChangeMapSpecialHandler());
+                    registerHandler(RecvOpcode.STORAGE, new StorageHandler());
+                    registerHandler(RecvOpcode.GIVE_FAME, new GiveFameHandler());
+                    registerHandler(RecvOpcode.PARTY_OPERATION, new PartyOperationHandler());
+                    registerHandler(RecvOpcode.DENY_PARTY_REQUEST, new DenyPartyRequestHandler());
+                    registerHandler(RecvOpcode.PARTYCHAT, new PartychatHandler());
+                    registerHandler(RecvOpcode.USE_DOOR, new DoorHandler());
+                    registerHandler(RecvOpcode.ENTER_MTS, new EnterMTSHandler());
+                    registerHandler(RecvOpcode.ENTER_CASH_SHOP, new EnterCashShopHandler());
+                    registerHandler(RecvOpcode.DAMAGE_SUMMON, new DamageSummonHandler());
+                    registerHandler(RecvOpcode.MOVE_SUMMON, new MoveSummonHandler());
+                    registerHandler(RecvOpcode.SUMMON_ATTACK, new SummonDamageHandler());
+                    registerHandler(RecvOpcode.BUDDYLIST_MODIFY, new BuddylistModifyHandler());
+                    registerHandler(RecvOpcode.USE_ITEMEFFECT, new UseItemEffectHandler());
+                    registerHandler(RecvOpcode.USE_CHAIR, new UseChairHandler());
+                    registerHandler(RecvOpcode.CANCEL_CHAIR, new CancelChairHandler());
+                    registerHandler(RecvOpcode.DAMAGE_REACTOR, new ReactorHitHandler());
+                    registerHandler(RecvOpcode.GUILD_OPERATION, new GuildOperationHandler());
+                    registerHandler(RecvOpcode.BBS_OPERATION, new BBSOperationHandler());
+                    registerHandler(RecvOpcode.SKILL_EFFECT, new SkillEffectHandler());
+                    break;
+                default:
+                    throw new RuntimeException("Unknown packet processor mode");
+            }
+        }
+    }
 }

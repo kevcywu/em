@@ -1,6 +1,6 @@
 package net.login;
 
-import java.io.FileReader;
+import constant.ServerConstant;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
@@ -20,6 +20,8 @@ import javax.management.ObjectName;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
 import database.DatabaseConnection;
+import java.sql.SQLException;
+import java.util.logging.Level;
 import net.MapleServerHandler;
 import net.PacketProcessor;
 import net.login.remote.LoginWorldInterface;
@@ -43,14 +45,13 @@ public class LoginServer implements Runnable, LoginServerMBean {
     private IoAcceptor acceptor;
     static final Logger log = LoggerFactory.getLogger(LoginServer.class);
     private static WorldRegistry worldRegistry = null;
-    private Map<Integer, String> channelServer = new HashMap<Integer, String>();
+    private final Map<Integer, String> channelServer = new HashMap<>();
     private LoginWorldInterface lwi;
     private WorldLoginInterface wli;
     private Properties prop = new Properties();
-    private Properties initialProp = new Properties();
     private Boolean worldReady = Boolean.TRUE;
     private Properties subnetInfo = new Properties();
-    private Map<Integer, Integer> load = new HashMap<Integer, Integer>();
+    private Map<Integer, Integer> load = new HashMap<>();
 
     int userLimit;
     int loginInterval;
@@ -133,29 +134,13 @@ public class LoginServer implements Runnable, LoginServerMBean {
                 synchronized (wli) {
                     // completely re-establish the rmi connection
                     try {
-                        FileReader fileReader = new FileReader(System.getProperty("net.sf.odinms.login.config"));
-                        initialProp.load(fileReader);
-                        fileReader.close();
-                        Registry registry = LocateRegistry.getRegistry(initialProp.getProperty("net.sf.odinms.world.host"),
-                                Registry.REGISTRY_PORT, new SslRMIClientSocketFactory());
+                        Registry registry = LocateRegistry.getRegistry(ServerConstant.SERVER_IP, Registry.REGISTRY_PORT, new SslRMIClientSocketFactory());
                         worldRegistry = (WorldRegistry) registry.lookup("WorldRegistry");
                         lwi = new LoginWorldInterfaceImpl();
-                        wli = worldRegistry.registerLoginServer(initialProp.getProperty("net.sf.odinms.login.key"), lwi);
-                        Properties dbProp = new Properties();
-                        fileReader = new FileReader("db.properties");
-                        dbProp.load(fileReader);
-                        fileReader.close();
-                        DatabaseConnection.setProps(dbProp);
+                        wli = worldRegistry.registerLoginServer("releaselogin", lwi);
                         DatabaseConnection.getConnection();
                         prop = wli.getWorldProperties();
-                        userLimit = Integer.parseInt(prop.getProperty("net.sf.odinms.login.userlimit"));
-                        try {
-                            fileReader = new FileReader("subnet.properties");
-                            subnetInfo.load(fileReader);
-                            fileReader.close();
-                        } catch (Exception e) {
-                            log.info("Could not load subnet configuration, falling back to world defaults", e);
-                        }
+                        userLimit = ServerConstant.USER_LIMIT;
                     } catch (Exception e) {
                         log.error("Reconnecting failed", e);
                     }
@@ -172,29 +157,13 @@ public class LoginServer implements Runnable, LoginServerMBean {
     @Override
     public void run() {
         try {
-            FileReader fileReader = new FileReader(System.getProperty("net.sf.odinms.login.config"));
-            initialProp.load(fileReader);
-            fileReader.close();
-            Registry registry = LocateRegistry.getRegistry(initialProp.getProperty("net.sf.odinms.world.host"),
-                    Registry.REGISTRY_PORT, new SslRMIClientSocketFactory());
+            Registry registry = LocateRegistry.getRegistry(ServerConstant.SERVER_IP, Registry.REGISTRY_PORT, new SslRMIClientSocketFactory());
             worldRegistry = (WorldRegistry) registry.lookup("WorldRegistry");
             lwi = new LoginWorldInterfaceImpl();
-            wli = worldRegistry.registerLoginServer(initialProp.getProperty("net.sf.odinms.login.key"), lwi);
-            Properties dbProp = new Properties();
-            fileReader = new FileReader("db.properties");
-            dbProp.load(fileReader);
-            fileReader.close();
-            DatabaseConnection.setProps(dbProp);
+            wli = worldRegistry.registerLoginServer("releaselogin", lwi);
             DatabaseConnection.getConnection();
             prop = wli.getWorldProperties();
-            userLimit = Integer.parseInt(prop.getProperty("net.sf.odinms.login.userlimit"));
-            try {
-                fileReader = new FileReader("subnet.properties");
-                subnetInfo.load(fileReader);
-                fileReader.close();
-            } catch (Exception e) {
-                log.trace("Could not load subnet configuration, falling back to world defaults", e);
-            }
+            userLimit = ServerConstant.USER_LIMIT;
         } catch (Exception e) {
             throw new RuntimeException("Could not connect to world server.", e);
         }
@@ -215,9 +184,9 @@ public class LoginServer implements Runnable, LoginServerMBean {
 
         TimerManager tMan = TimerManager.getInstance();
         tMan.start();
-        loginInterval = Integer.parseInt(prop.getProperty("net.sf.odinms.login.interval"));
+        loginInterval = ServerConstant.LOGIN_INTERVAL;
         tMan.register(LoginWorker.getInstance(), loginInterval);
-        rankingInterval = Long.parseLong(prop.getProperty("net.sf.odinms.login.ranking.interval"));
+        rankingInterval = ServerConstant.RANKING_INTERVAL;
         tMan.register(new RankingWorker(), rankingInterval);
 
         try {
@@ -252,7 +221,19 @@ public class LoginServer implements Runnable, LoginServerMBean {
         return wli;
     }
 
+    public static void resetLogin() {
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement st = conn.prepareStatement("UPDATE accounts SET loggedin = ?;");
+            st.setInt(1, 0);
+            st.executeUpdate();
+        } catch (SQLException ex) {
+            java.util.logging.Logger.getLogger(LoginServer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     public static void main(String args[]) {
+        resetLogin();
         try {
             LoginServer.getInstance().run();
         } catch (Exception ex) {
@@ -260,6 +241,7 @@ public class LoginServer implements Runnable, LoginServerMBean {
         }
     }
 
+    @Override
     public int getLoginInterval() {
         return loginInterval;
     }

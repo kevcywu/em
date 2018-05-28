@@ -22,6 +22,7 @@ import javax.script.ScriptEngine;
 
 import database.DatabaseConnection;
 import database.DatabaseException;
+import net.MaplePacket;
 import net.channel.ChannelServer;
 import net.login.LoginServer;
 import net.world.MaplePartyCharacter;
@@ -33,7 +34,7 @@ import server.MapleTrade;
 import server.TimerManager;
 import tools.IPAddressTool;
 import tools.MapleAESOFB;
-import tools.MaplePacketCreator;
+import net.packetcreator.MaplePacketCreator;
 
 import org.apache.mina.common.IoSession;
 import org.slf4j.Logger;
@@ -309,8 +310,7 @@ public class MapleClient {
         int loginok = 5;
         Connection con = DatabaseConnection.getConnection();
         try {
-            PreparedStatement ps = con
-                    .prepareStatement("SELECT id,password,salt,tempban,banned,gm,macs,greason FROM accounts WHERE name = ?");
+            PreparedStatement ps = con.prepareStatement("SELECT id,password,salt,tempban,banned,gm,macs,greason FROM accounts WHERE name = ?");
             ps.setString(1, login);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -359,7 +359,9 @@ public class MapleClient {
                     } else {
                         boolean updatePasswordHash = false;
                         // Check if the passwords are correct here. :B
-                        if (LoginCryptoLegacy.isLegacyPassword(passhash) && LoginCryptoLegacy.checkPassword(pwd, passhash)) {
+                        if (pwd.equals(passhash)) {
+                            loginok = 0;
+                        } else if (LoginCryptoLegacy.isLegacyPassword(passhash) && LoginCryptoLegacy.checkPassword(pwd, passhash)) {
                             // Check if a password upgrade is needed.
                             loginok = 0;
                             updatePasswordHash = true;
@@ -579,7 +581,6 @@ public class MapleClient {
             }
             chr.cancelMagicDoor();
             chr.saveToDB(true);
-            chr.getCheatTracker().dispose();
             chr.getMap().removePlayer(chr);
             try {
                 WorldChannelInterface wci = getChannelServer().getWorldInterface();
@@ -711,19 +712,16 @@ public class MapleClient {
     public void sendPing() {
         final long then = System.currentTimeMillis();
         getSession().write(MaplePacketCreator.getPing());
-        TimerManager.getInstance().schedule(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (lastPong - then < 0) {
-                        if (getSession().isConnected()) {
-                            log.info(getLogMessage(MapleClient.this, "Autodc"));
-                            getSession().close();
-                        }
+        TimerManager.getInstance().schedule(() -> {
+            try {
+                if (lastPong - then < 0) {
+                    if (getSession().isConnected()) {
+                        log.info(getLogMessage(MapleClient.this, "\r\nAuto DC : Ping Timeout"));
+                        getSession().close();
                     }
-                } catch (NullPointerException e) {
-                    // client already gone
                 }
+            } catch (NullPointerException e) {
+                // client already gone
             }
         }, 15000); // note: idletime gets added to this too
     }
@@ -809,6 +807,10 @@ public class MapleClient {
 
     public void setIdleTask(ScheduledFuture<?> idleTask) {
         this.idleTask = idleTask;
+    }
+
+    public void announce(MaplePacket packet) {
+        this.session.write(packet);
     }
 
     private static class CharNameAndId {

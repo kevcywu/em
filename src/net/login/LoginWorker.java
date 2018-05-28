@@ -1,23 +1,3 @@
-/*
-	This file is part of the OdinMS Maple Story Server
-    Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
-                       Matthias Butz <matze@odinms.de>
-                       Jan Christian Meyer <vimes@odinms.de>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License version 3
-    as published by the Free Software Foundation. You may not use, modify
-    or distribute this program under any other version of the
-    GNU Affero General Public License.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 package net.login;
 
 import java.rmi.RemoteException;
@@ -31,15 +11,12 @@ import java.util.Set;
 
 import client.MapleClient;
 import server.TimerManager;
-import tools.MaplePacketCreator;
+import net.packetcreator.MaplePacketCreator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import net.packetcreator.LoginPacketCreator;
 
-/**
- *
- * @author Matze
- */
 public class LoginWorker implements Runnable {
 
     private static LoginWorker instance = new LoginWorker();
@@ -95,7 +72,6 @@ public class LoginWorker implements Runnable {
             }
             possibleLoginHistory.add(possibleLogins);
 
-//			log.info("Possible logins: " + possibleLogins + " (Waiting: " + waiting.size() + ")");
             for (int i = 0; i < possibleLogins; i++) {
                 final MapleClient client;
                 synchronized (waiting) {
@@ -106,15 +82,15 @@ public class LoginWorker implements Runnable {
                 }
                 waitingNames.remove(client.getAccountName().toLowerCase());
                 if (client.finishLogin(true) == 0) {
-                    client.getSession().write(MaplePacketCreator.getAuthSuccessRequestPin(client.getAccountName()));
+                    client.getSession().write(LoginPacketCreator.getAuthSuccess(client.getAccountName()));
                     client.setIdleTask(TimerManager.getInstance().schedule(new Runnable() {
-
+                        @Override
                         public void run() {
                             client.getSession().close();
                         }
                     }, 10 * 60 * 10000));
                 } else {
-                    client.getSession().write(MaplePacketCreator.getLoginFailed(7));
+                    client.getSession().write(LoginPacketCreator.getLoginFailed(LoginPacketCreator.CheckPasswordResult.ALREADY_LOGGED_IN));
                 }
             }
 

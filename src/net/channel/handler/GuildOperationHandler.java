@@ -6,7 +6,7 @@ import tools.data.input.SeekableLittleEndianAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Iterator;
-import tools.MaplePacketCreator;
+import net.packetcreator.MaplePacketCreator;
 import client.MapleCharacter;
 import net.world.guild.MapleGuild;
 import net.world.guild.MapleGuildResponse;

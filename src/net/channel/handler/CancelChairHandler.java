@@ -2,7 +2,7 @@ package net.channel.handler;
 
 import client.MapleClient;
 import net.AbstractMaplePacketHandler;
-import tools.MaplePacketCreator;
+import net.packetcreator.MaplePacketCreator;
 import tools.data.input.SeekableLittleEndianAccessor;
 
 public class CancelChairHandler extends AbstractMaplePacketHandler {

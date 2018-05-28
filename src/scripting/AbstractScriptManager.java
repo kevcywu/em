@@ -30,7 +30,6 @@ public abstract class AbstractScriptManager {
 
     protected Invocable getInvocable(String path, MapleClient c) {
         try {
-            System.out.println("reading script: "+ path);
             path = "scripts/" + path;
             engine = null;
             if (c != null) {
@@ -45,7 +44,7 @@ public abstract class AbstractScriptManager {
                 if (c != null) {
                     c.setScriptEngine(path, engine);
                 }
-                
+
                 try (Stream<String> stream = Files.lines(scriptFile.toPath())) {
                     String lines = "load('nashorn:mozilla_compat.js');";
                     lines += stream.collect(Collectors.joining(System.lineSeparator()));
@@ -54,10 +53,6 @@ public abstract class AbstractScriptManager {
                     log.error("Error executing script.", e);
                     return null;
                 }
-//
-//                FileReader fr = new FileReader(scriptFile);
-//                engine.eval(fr);
-//                fr.close();
             }
             return (Invocable) engine;
         } catch (Exception e) {

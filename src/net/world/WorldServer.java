@@ -15,10 +15,6 @@ import database.DatabaseConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- *
- * @author Matze
- */
 public class WorldServer {
 
     private static WorldServer instance = null;
@@ -29,14 +25,7 @@ public class WorldServer {
 
     private WorldServer() {
         try {
-            InputStreamReader is = new FileReader("db.properties");
-            dbProp.load(is);
-            is.close();
-            DatabaseConnection.setProps(dbProp);
             DatabaseConnection.getConnection();
-            is = new FileReader("world.properties");
-            worldProp.load(is);
-            is.close();
         } catch (Exception e) {
             log.error("Could not configuration", e);
         }
@@ -63,8 +52,7 @@ public class WorldServer {
 
     public static void main(String[] args) {
         try {
-            Registry registry = LocateRegistry.createRegistry(Registry.REGISTRY_PORT,
-                    new SslRMIClientSocketFactory(), new SslRMIServerSocketFactory());
+            Registry registry = LocateRegistry.createRegistry(Registry.REGISTRY_PORT, new SslRMIClientSocketFactory(), new SslRMIServerSocketFactory());
             registry.rebind("WorldRegistry", WorldRegistryImpl.getInstance());
         } catch (RemoteException ex) {
             log.error("Could not initialize RMI system", ex);

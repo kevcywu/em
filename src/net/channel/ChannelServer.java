@@ -1,12 +1,9 @@
 package net.channel;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -16,7 +13,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -27,7 +23,10 @@ import javax.management.ObjectName;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
 import client.MapleCharacter;
+import constant.ServerConstant;
 import database.DatabaseConnection;
+import java.io.FileNotFoundException;
+import java.rmi.NotBoundException;
 import net.MaplePacket;
 import net.MapleServerHandler;
 import net.PacketProcessor;
@@ -40,12 +39,11 @@ import net.world.remote.WorldChannelInterface;
 import net.world.remote.WorldRegistry;
 import provider.MapleDataProviderFactory;
 import scripting.event.EventScriptManager;
-import server.AutobanManager;
 import server.MapleTrade;
 import server.ShutdownServer;
 import server.TimerManager;
 import server.maps.MapleMapFactory;
-import tools.MaplePacketCreator;
+import net.packetcreator.MaplePacketCreator;
 
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.common.CloseFuture;
@@ -60,19 +58,15 @@ import org.slf4j.LoggerFactory;
 public class ChannelServer implements Runnable, ChannelServerMBean {
 
     private static int uniqueID = 1;
-    private int port = 7575;
-    private static Properties initialProp;
     private static final Logger log = LoggerFactory.getLogger(ChannelServer.class);
     //private static ThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(5);
     private static WorldRegistry worldRegistry;
-    private PlayerStorage players = new PlayerStorage();
+    private final PlayerStorage players = new PlayerStorage();
     // private Map<String, MapleCharacter> clients = new LinkedHashMap<String, MapleCharacter>();
-    private String serverMessage = "OdinMS Testserver - We do what we must because we can... and it's free ;) - Please don't expect anything to work here";
     private int expRate;
     private int mesoRate;
     private int channel;
-    private String key;
-    private Properties props = new Properties();
+    private final String key;
     private ChannelWorldInterface cwi;
     private WorldChannelInterface wci = null;
     private IoAcceptor acceptor;
@@ -80,16 +74,16 @@ public class ChannelServer implements Runnable, ChannelServerMBean {
     private boolean shutdown = false;
     private boolean finishedShutdown = false;
 
-    private MapleMapFactory mapFactory;
+    private final MapleMapFactory mapFactory;
     private EventScriptManager eventSM;
-    private static Map<Integer, ChannelServer> instances = new HashMap<Integer, ChannelServer>();
-    private static Map<String, ChannelServer> pendingInstances = new HashMap<String, ChannelServer>();
-    private Map<Integer, MapleGuildSummary> gsStore = new HashMap<Integer, MapleGuildSummary>();
+    private static final Map<Integer, ChannelServer> instances = new HashMap<Integer, ChannelServer>();
+    private static final Map<String, ChannelServer> pendingInstances = new HashMap<String, ChannelServer>();
+    private final Map<Integer, MapleGuildSummary> gsStore = new HashMap<>();
 
     private Boolean worldReady = true;
 
     private ChannelServer(String key) {
-        mapFactory = new MapleMapFactory(MapleDataProviderFactory.getDataProvider(new File(System.getProperty("net.sf.odinms.wzpath") + "/Map.wz")), MapleDataProviderFactory.getDataProvider(new File(System.getProperty("net.sf.odinms.wzpath") + "/String.wz")));
+        mapFactory = new MapleMapFactory(MapleDataProviderFactory.getDataProvider(new File("wz/Map.wz")), MapleDataProviderFactory.getDataProvider(new File("wz/String.wz")));
         this.key = key;
     }
 
@@ -115,23 +109,13 @@ public class ChannelServer implements Runnable, ChannelServerMBean {
                 synchronized (wci) {
                     // completely re-establish the rmi connection
                     try {
-                        initialProp = new Properties();
-                        FileReader fr = new FileReader(System.getProperty("net.sf.odinms.channel.config"));
-                        initialProp.load(fr);
-                        fr.close();
-                        Registry registry = LocateRegistry.getRegistry(initialProp.getProperty("net.sf.odinms.world.host"),
-                                Registry.REGISTRY_PORT, new SslRMIClientSocketFactory());
+                        Registry registry = LocateRegistry.getRegistry(ServerConstant.SERVER_IP, Registry.REGISTRY_PORT, new SslRMIClientSocketFactory());
+
                         worldRegistry = (WorldRegistry) registry.lookup("WorldRegistry");
                         cwi = new ChannelWorldInterfaceImpl(this);
                         wci = worldRegistry.registerChannelServer(key, cwi);
-                        props = wci.getGameProperties();
-                        expRate = Integer.parseInt(props.getProperty("net.sf.odinms.world.exp"));
-                        mesoRate = Integer.parseInt(props.getProperty("net.sf.odinms.world.meso"));
-                        Properties dbProp = new Properties();
-                        fr = new FileReader("db.properties");
-                        dbProp.load(fr);
-                        fr.close();
-                        DatabaseConnection.setProps(dbProp);
+                        expRate = ServerConstant.EXP_RATE;
+                        mesoRate = ServerConstant.MESO_RATE;
                         DatabaseConnection.getConnection();
                         wci.serverReady();
                     } catch (Exception e) {
@@ -151,23 +135,13 @@ public class ChannelServer implements Runnable, ChannelServerMBean {
         try {
             cwi = new ChannelWorldInterfaceImpl(this);
             wci = worldRegistry.registerChannelServer(key, cwi);
-            props = wci.getGameProperties();
-            expRate = Integer.parseInt(props.getProperty("net.sf.odinms.world.exp"));
-            mesoRate = Integer.parseInt(props.getProperty("net.sf.odinms.world.meso"));
-            eventSM = new EventScriptManager(this, props.getProperty("net.sf.odinms.channel.events").split(","));
-            Properties dbProp = new Properties();
-            FileReader fileReader = new FileReader("db.properties");
-            dbProp.load(fileReader);
-            fileReader.close();
-            DatabaseConnection.setProps(dbProp);
+            expRate = ServerConstant.EXP_RATE;
+            mesoRate = ServerConstant.MESO_RATE;
+            eventSM = new EventScriptManager(this, ServerConstant.EVENTS);
             DatabaseConnection.getConnection();
-        } catch (Exception e) {
+        } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
-
-        port = Integer.parseInt(props.getProperty("net.sf.odinms.channel.net.port"));
-        ip = props.getProperty("net.sf.odinms.channel.net.interface") + ":" + port;
-
         ByteBuffer.setUseDirectBuffers(false);
         ByteBuffer.setAllocator(new SimpleByteBufferAllocator());
 
@@ -181,7 +155,10 @@ public class ChannelServer implements Runnable, ChannelServerMBean {
         // Item.loadInitialDataFromDB();
         TimerManager tMan = TimerManager.getInstance();
         tMan.start();
-        tMan.register(AutobanManager.getInstance(), 60000);
+//        tMan.register(AutobanManager.getInstance(), 60000);
+
+        int port = 7574 + channel;
+        ip = ServerConstant.SERVER_IP + ":" + port;
 
         try {
             MapleServerHandler serverHandler = new MapleServerHandler(PacketProcessor.getProcessor(PacketProcessor.Mode.CHANNELSERVER), channel);
@@ -208,9 +185,6 @@ public class ChannelServer implements Runnable, ChannelServerMBean {
                 chr.getEventInstance().playerDisconnected(chr);
             }
             chr.saveToDB(true);
-            if (chr.getCheatTracker() != null) {
-                chr.getCheatTracker().dispose();
-            }
             removePlayer(chr);
         }
         for (MapleCharacter chr : chrs) {
@@ -251,7 +225,7 @@ public class ChannelServer implements Runnable, ChannelServerMBean {
 
     public void addPlayer(MapleCharacter chr) {
         players.registerPlayer(chr);
-        chr.getClient().getSession().write(MaplePacketCreator.serverMessage(serverMessage));
+        chr.getClient().getSession().write(MaplePacketCreator.serverMessage(ServerConstant.SERVER_MESSAGE));
     }
 
     public IPlayerStorage getPlayerStorage() {
@@ -262,17 +236,20 @@ public class ChannelServer implements Runnable, ChannelServerMBean {
         players.deregisterPlayer(chr);
     }
 
+    @Override
     public int getConnectedClients() {
         return players.getAllCharacters().size();
     }
 
+    @Override
     public String getServerMessage() {
-        return serverMessage;
+        return ServerConstant.SERVER_MESSAGE;
     }
 
+    @Override
     public void setServerMessage(String newMessage) {
-        serverMessage = newMessage;
-        broadcastPacket(MaplePacketCreator.serverMessage(serverMessage));
+        ServerConstant.SERVER_MESSAGE = newMessage;
+        broadcastPacket(MaplePacketCreator.serverMessage(ServerConstant.SERVER_MESSAGE));
     }
 
     public void broadcastPacket(MaplePacket data) {
@@ -281,14 +258,17 @@ public class ChannelServer implements Runnable, ChannelServerMBean {
         }
     }
 
+    @Override
     public int getExpRate() {
         return expRate;
     }
 
+    @Override
     public void setExpRate(int expRate) {
         this.expRate = expRate;
     }
 
+    @Override
     public int getChannel() {
         return channel;
     }
@@ -334,10 +314,6 @@ public class ChannelServer implements Runnable, ChannelServerMBean {
         return wci;
     }
 
-    public String getProperty(String name) {
-        return props.getProperty(name);
-    }
-
     public boolean isShutdown() {
         return shutdown;
     }
@@ -367,7 +343,7 @@ public class ChannelServer implements Runnable, ChannelServerMBean {
 
     public void reloadEvents() {
         eventSM.cancel();
-        eventSM = new EventScriptManager(this, props.getProperty("net.sf.odinms.channel.events").split(","));
+        eventSM = new EventScriptManager(this, ServerConstant.EVENTS);
         eventSM.init();
     }
 
@@ -435,16 +411,14 @@ public class ChannelServer implements Runnable, ChannelServerMBean {
         }
     }
 
-    public static void main(String args[]) throws FileNotFoundException, IOException, NotBoundException,
-            InstanceAlreadyExistsException, MBeanRegistrationException,
-            NotCompliantMBeanException, MalformedObjectNameException {
-        initialProp = new Properties();
-        initialProp.load(new FileReader(System.getProperty("net.sf.odinms.channel.config")));
-        Registry registry = LocateRegistry.getRegistry(initialProp.getProperty("net.sf.odinms.world.host"), Registry.REGISTRY_PORT, new SslRMIClientSocketFactory());
+    public static void main(String args[]) throws FileNotFoundException, IOException, NotBoundException, InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException, MalformedObjectNameException {
+        Registry registry = LocateRegistry.getRegistry(ServerConstant.SERVER_IP, Registry.REGISTRY_PORT, new SslRMIClientSocketFactory());
         worldRegistry = (WorldRegistry) registry.lookup("WorldRegistry");
-        for (int i = 0; i < Integer.parseInt(initialProp.getProperty("net.sf.odinms.channel.count", "0")); i++) {
-            newInstance(initialProp.getProperty("net.sf.odinms.channel." + i + ".key")).run();
+
+        for (int i = 0; i < ServerConstant.CHANNEL_COUNT; i++) {
+            newInstance("release" + (i + 1)).run();
         }
+
         DatabaseConnection.getConnection(); // touch - so we see database problems early...
     }
 }

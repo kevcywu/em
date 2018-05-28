@@ -1,11 +1,11 @@
 package net;
 
 import client.MapleClient;
+import constant.ServerConstant;
 import net.channel.ChannelServer;
 import net.login.LoginWorker;
-import tools.HexTool;
 import tools.MapleAESOFB;
-import tools.MaplePacketCreator;
+import net.packetcreator.MaplePacketCreator;
 import tools.data.input.ByteArrayByteStream;
 import tools.data.input.GenericSeekableLittleEndianAccessor;
 import tools.data.input.SeekableLittleEndianAccessor;
@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 public class MapleServerHandler extends IoHandlerAdapter {
 
     private final static Logger log = LoggerFactory.getLogger(MapleServerHandler.class);
-    private final static short MAPLE_VERSION = 55;
     private PacketProcessor processor;
     private int channel = -1;
 
@@ -75,13 +74,13 @@ public class MapleServerHandler extends IoHandlerAdapter {
 
         ivRecv[3] = (byte) (Math.random() * 255);
         ivSend[3] = (byte) (Math.random() * 255);
-        MapleAESOFB sendCypher = new MapleAESOFB(key, ivSend, (short) (0xFFFF - MAPLE_VERSION));
-        MapleAESOFB recvCypher = new MapleAESOFB(key, ivRecv, MAPLE_VERSION);
+        MapleAESOFB sendCypher = new MapleAESOFB(key, ivSend, (short) (0xFFFF - ServerConstant.MAPLE_VERSION));
+        MapleAESOFB recvCypher = new MapleAESOFB(key, ivRecv, ServerConstant.MAPLE_VERSION);
 
         MapleClient client = new MapleClient(sendCypher, recvCypher, session);
         client.setChannel(channel);
 
-        session.write(MaplePacketCreator.getHello(MAPLE_VERSION, ivSend, ivRecv, false));
+        session.write(MaplePacketCreator.getHello(ServerConstant.MAPLE_VERSION, ivSend, ivRecv));
         session.setAttribute(MapleClient.CLIENT_KEY, client);
         session.setIdleTime(IdleStatus.READER_IDLE, 30);
         session.setIdleTime(IdleStatus.WRITER_IDLE, 30);
@@ -103,28 +102,12 @@ public class MapleServerHandler extends IoHandlerAdapter {
 
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
-        byte[] content = (byte[]) message;
-
-        SeekableLittleEndianAccessor slea = new GenericSeekableLittleEndianAccessor(new ByteArrayByteStream(content));
+        SeekableLittleEndianAccessor slea = new GenericSeekableLittleEndianAccessor(new ByteArrayByteStream((byte[]) message));
+//        log.info("Recv: {}", slea.toString());
         short packetId = slea.readShort();
         MapleClient client = (MapleClient) session.getAttribute(MapleClient.CLIENT_KEY);
-
         MaplePacketHandler packetHandler = processor.getHandler(packetId);
-        // HexTool#toSting on large buffers is rather expensive - so only do it when we really need to
-        if (log.isTraceEnabled() || log.isInfoEnabled()) {
-            String from = "";
-            if (client.getPlayer() != null) {
-                from = "from " + client.getPlayer().getName() + " ";
-            }
-            if (packetHandler == null) {
-                log.info("Got unhandeled Message {} ({}) {}\n{}", new Object[]{from, content.length,
-                    HexTool.toString(content), HexTool.toStringFromAscii(content)});
-            } else if (log.isTraceEnabled()) {
-                log.trace("Got Message {}handled by {} ({}) {}\n{}", new Object[]{from,
-                    packetHandler.getClass().getSimpleName(), content.length, HexTool.toString(content),
-                    HexTool.toStringFromAscii(content)});
-            }
-        }
+
         if (packetHandler != null && packetHandler.validateState(client)) {
             try {
                 packetHandler.handlePacket(slea, client);
@@ -132,6 +115,7 @@ public class MapleServerHandler extends IoHandlerAdapter {
                 log.error(MapleClient.getLogMessage(client, "Exception during processing packet: " + packetHandler.getClass().getName() + ": " + t.getMessage()), t);
             }
         }
+
     }
 
     @Override
@@ -145,6 +129,7 @@ public class MapleServerHandler extends IoHandlerAdapter {
         if (client != null) {
             client.sendPing();
         }
+
         super.sessionIdle(session, status);
     }
 }

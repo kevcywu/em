@@ -20,7 +20,7 @@ import database.DatabaseConnection;
 import net.MaplePacket;
 import net.channel.remote.ChannelWorldInterface;
 import net.world.WorldRegistryImpl;
-import tools.MaplePacketCreator;
+import net.packetcreator.MaplePacketCreator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -375,9 +375,6 @@ public class MapleGuild implements java.io.Serializable {
         Connection con;
 
         try {
-            Properties dbProp = new Properties();
-            InputStreamReader is = new FileReader("db.properties");
-            dbProp.load(is);
             con = DatabaseConnection.getConnection();
 
             PreparedStatement ps = con.prepareStatement("SELECT guildid FROM guilds WHERE name = ?");

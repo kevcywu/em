@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import database.DatabaseConnection;
-import tools.MaplePacketCreator;
+import net.packetcreator.MaplePacketCreator;
 
 public class BuddyList {
 
@@ -23,9 +23,9 @@ public class BuddyList {
         BUDDYLIST_FULL, ALREADY_ON_LIST, OK
     }
 
-    private Map<Integer, BuddylistEntry> buddies = new LinkedHashMap<Integer, BuddylistEntry>();
+    private final Map<Integer, BuddylistEntry> buddies = new LinkedHashMap<>();
     private int capacity;
-    private Deque<CharacterNameAndId> pendingRequests = new LinkedList<CharacterNameAndId>();
+    private final Deque<CharacterNameAndId> pendingRequests = new LinkedList<>();
 
     public BuddyList(int capacity) {
         super();

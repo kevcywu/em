@@ -35,7 +35,7 @@ import client.MapleCharacter;
 import client.MapleClient;
 import database.DatabaseConnection;
 import net.AbstractMaplePacketHandler;
-import tools.MaplePacketCreator;
+import net.packetcreator.MaplePacketCreator;
 import tools.data.input.SeekableLittleEndianAccessor;
 import net.world.guild.MapleGuild;
 

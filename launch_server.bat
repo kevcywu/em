@@ -1,5 +1,5 @@
 @ECHO OFF
-TITLE ~ServerStarter~ Made by Rigged of RaGEZONE Forums
+TITLE ServerStarter
 ECHO Press enter to begin the process of opening your server...
 pause >nul
 ECHO Starting launch_world.bat

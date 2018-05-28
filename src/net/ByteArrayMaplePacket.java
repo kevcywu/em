@@ -4,8 +4,7 @@ import tools.HexTool;
 
 public class ByteArrayMaplePacket implements MaplePacket {
 
-    public static final long serialVersionUID = -7997681658570958848L;
-    private byte[] data;
+    private final byte[] data;
     private Runnable onSend;
 
     public ByteArrayMaplePacket(byte[] data) {
@@ -22,10 +21,12 @@ public class ByteArrayMaplePacket implements MaplePacket {
         return HexTool.toString(data);
     }
 
+    @Override
     public Runnable getOnSend() {
         return onSend;
     }
 
+    @Override
     public void setOnSend(Runnable onSend) {
         this.onSend = onSend;
     }
